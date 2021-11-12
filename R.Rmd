@@ -1,28 +1,72 @@
 ---
 title: "Video_Project"
 output: html_document
+author: "Boyu Zheng"
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
+  
+##Load Data
 
-## R Markdown
-
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
-
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
-
-```{r cars}
-summary(cars)
+```{r}
+data <- read.csv("Video_project_dataset.csv")
+summary(data)
 ```
 
-## Including Plots
 
-You can also embed plots, for example:
+##Simple EDA
 
-```{r pressure, echo=FALSE}
-plot(pressure)
+Except FEMALE (female proportion) and PCT_BA (percentage of people with bachelor degree in student's neighbourhood), most of variables are skewed. Extremely the demographic and income variables like PCT_BLACK, PCT_ASIAN, PCT_ASIAN, POVERTY_RATE.
+
+Demographic variables also have many outliers. COSTT4_A (Cost of Attendance) and PCT_BA have very few outliers.
+
+```{r}
+par(mfrow=c(3,3))
+hist(data$ADM_RATE, main="Histogram of Admission Rate", ylab="Admission Rate", breaks=20)
+hist(data$COSTT4_A, main="Histogram of Average Cost of Attendance", ylab="Average Cost of Attendance",breaks=20)
+hist(data$AVGFACSAL, main="Histogram of Average Faculty Salary", ylab="Average Salary",breaks=20)
+hist(data$FEMALE, main="Histogram of Female Proportion", ylab="Percentage of Female Student",breaks=20)
+hist(data$PCT_BA, main="Histogram of Education Level", ylab="Percentage of people with bachelor degree, over 25",breaks=20)
+hist(data$PCT_BORN_US, main="Histogram of Porportion of people born in US", ylab="Percentage of people born in US",breaks=20)
+hist(data$PCT_BLACK, main="Histogram of Porportion of Black", ylab="Percentage of Black people in Student's Neighbourhood",breaks=20)
+hist(data$PCT_ASIAN, main="Histogram of Porportion of Asian", ylab="Percentage of Asian people in Student's Neighbourhood",breaks=20)
+hist(data$POVERTY_RATE, main="Histogram of Poverty Rate", ylab="Poverty Rate",breaks=20)
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+```{r}
+par(mfrow=c(3,3))
+boxplot(data$ADM_RATE, main="Histogram of Admission Rate", ylab="Admission Rate", horizontal=TRUE)
+boxplot(data$COSTT4_A, main="Histogram of Average Cost of Attendance", ylab="Average Cost of Attendance",horizontal=TRUE)
+boxplot(data$AVGFACSAL, main="Histogram of Average Faculty Salary", ylab="Average Salary",horizontal=TRUE)
+boxplot(data$FEMALE, main="Histogram of Female Proportion", ylab="Percentage of Female Student",horizontal=TRUE)
+boxplot(data$PCT_BA, main="Histogram of Education Level", ylab="Percentage of people with bachelor degree, over 25",horizontal=TRUE)
+boxplot(data$PCT_BORN_US, main="Histogram of Porportion of people born in US", ylab="Percentage of people born in US",horizontal=TRUE)
+boxplot(data$PCT_BLACK, main="Histogram of Porportion of Black", ylab="Percentage of Black people in Student's Neighbourhood",horizontal=TRUE)
+boxplot(data$PCT_ASIAN, main="Histogram of Porportion of Asian", ylab="Percentage of Asian people in Student's Neighbourhood",horizontal=TRUE)
+boxplot(data$POVERTY_RATE, main="Histogram of Poverty Rate", ylab="Poverty Rate",horizontal=TRUE)
+```
+
+##Simple Linear Regression
+
+Except Cost of Attendance (COSTT4_A) and Education level (PCT_BA), we see no significantly visible linear relationship between the variable and admission rate. Both COSTT4_A and PCT_BA have negative relationship with admission rate. 
+
+```{r}
+plot(x=data$COSTT4_A,y=data$ADM_RATE,xlab="Average Cost of Attendance", ylab="Admission Rate", main="Scatter plot for Cost vs Admission Rate")
+plot(x=data$PCT_BA,y=data$ADM_RATE,xlab="Percentage of People with Bachelor Degree", ylab="Admission Rate", main="Scatter plot for Education Level vs Admission Rate")
+plot(x=data$PCT_BORN_US,y=data$ADM_RATE,xlab="Percentage of People Born in US", ylab="Admission Rate", main="Scatter plot for US Proportion vs Admission Rate")
+plot(x=data$POVERTY_RATE,y=data$ADM_RATE,xlab="Poverty Rate", ylab="Admission Rate", main="Scatter plot for Poverty Rate vs Admission Rate")
+plot(x=data$PCT_BLACK,y=data$ADM_RATE,xlab="Percentage of Black People", ylab="Admission Rate", main="Scatter plot for Black vs Admission Rate")
+plot(x=data$PCT_ASIAN,y=data$ADM_RATE,xlab="Percentage of Asian People", ylab="Admission Rate", main="Scatter plot for Asian vs Admission Rate")
+```
+
+## One multiple linear regression model, with F test
+
+Result shows significant F test result, which means linear relationship exists. However, R-squared is small and some variables (like REGION and PCT_ASIAN) are not significant. We may need a partial F test.
+
+```{r}
+mod1 <- lm(ADM_RATE ~ REGION+PBI+WOMENONLY+COSTT4_A+PCT_BA+PCT_BORN_US+PCT_BLACK+PCT_ASIAN+POVERTY_RATE, data=data)
+summary(mod1)
+```
+
