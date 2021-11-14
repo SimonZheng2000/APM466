@@ -73,31 +73,72 @@ plot(x=data$PCT_WHITE,y=data$ADM_RATE,xlab="Percentage of Black People", ylab="A
 plot(x=data$PCT_ASIAN,y=data$ADM_RATE,xlab="Percentage of Asian People", ylab="Admission Rate", main="Scatter plot for Asian vs Admission Rate")
 ```
 
-## One multiple linear regression model, with F test
+## Main regression model, with F test
 
-Result shows significant F test result, which means linear relationship exists. However, R-squared is small and some variables (like REGION and PCT_ASIAN) are not significant. We may need a partial F test.
+Below is our initial main regression model, with all variables and factors we intend to include (here interaction terms are not included). Result shows significant F test result, which means linear relationship exists. However, R-squared is small and some variables are not significant. We may need a partial F test.
 
 ```{r}
-mod1 <- lm(ADM_RATE ~ CONTROL_1+COSTT4_A+AVGFACSAL+FEMALE+PCT_WHITE+PCT_ASIAN+POVERTY_RATE+CONTROL_1*FEMALE+CONTROL_1*PCT_ASIAN, data=data)
+mod1 <- lm(ADM_RATE ~ CONTROL_1+CONTROL_2+COSTT4_A+AVGFACSAL+FEMALE+PCT_BA+PCT_WHITE+PCT_ASIAN+PCT_BLACK+POVERTY_RATE+CONTROL_1*FEMALE+CONTROL_1*PCT_ASIAN+CONTROL_1*POVERTY_RATE+CONTROL_1*COSTT4_A+CONTROL_1*AVGFACSAL+CONTROL_1*PCT_WHITE+CONTROL_1*PCT_BA, data=data)
 summary(mod1)
 ```
 
 #Partial F test
-We reject the null hypothesis that coefficientS of CONTROL_1, CONTROL_1*FEMALE, CONTROL_1*ASIAN are zero.
+
+First we examine whether the interaction terms between CONTROL_1 (which is whether the university is public) and other variables are still needed. We found that 
+
+We reject the null hypothesis that coefficientS of CONTROL_1, CONTROL_1*FEMALE, CONTROL_1*ASIAN are zero. So we included them in our model.
 
 ```{r}
-mod1 <- lm(ADM_RATE ~ COSTT4_A+AVGFACSAL+FEMALE+PCT_WHITE+PCT_ASIAN+POVERTY_RATE, data=data)
-mod2 <- lm(ADM_RATE ~ CONTROL_1+COSTT4_A+AVGFACSAL+FEMALE+PCT_WHITE+PCT_ASIAN+POVERTY_RATE+CONTROL_1*FEMALE+CONTROL_1*PCT_ASIAN, data=data)
+mod1 <- lm(ADM_RATE ~ CONTROL_1+CONTROL_2+COSTT4_A+AVGFACSAL+FEMALE+PCT_BA+PCT_WHITE+PCT_ASIAN+PCT_BLACK+POVERTY_RATE, data=data)
+mod2 <- lm(ADM_RATE ~ CONTROL_1+CONTROL_2+COSTT4_A+AVGFACSAL+FEMALE+PCT_BA+PCT_WHITE+PCT_ASIAN+PCT_BLACK+POVERTY_RATE+CONTROL_1*FEMALE+CONTROL_1*PCT_ASIAN+CONTROL_1*POVERTY_RATE+CONTROL_1*COSTT4_A+CONTROL_1*AVGFACSAL+CONTROL_1*PCT_WHITE+CONTROL_1*PCT_BA, data=data)
 anova(mod1,mod2)
 ```
 
-We faile to reject the null hypothesis that coefficient of CONTROL_1*PCT_WHITE, CONTROL_1*COSTT4_A, CONTROL_1*AVGFACSAL are zero, so we choose to delete these variables from the model.
+We fail to reject the null hypothesis that coefficient of CONTROL_1*PCT_WHITE, CONTROL_1*COSTT4_A, CONTROL_1*AVGFACSAL are zero, so we choose to delete these variables from the model.
 
 ```{r}
 mod3 <- lm(ADM_RATE ~ CONTROL_1+COSTT4_A+AVGFACSAL+FEMALE+PCT_WHITE+PCT_ASIAN+POVERTY_RATE+CONTROL_1*FEMALE+CONTROL_1*PCT_ASIAN, data=data)
 mod4 <- lm(ADM_RATE ~ CONTROL_1+COSTT4_A+AVGFACSAL+FEMALE+PCT_WHITE+PCT_ASIAN+POVERTY_RATE+CONTROL_1*FEMALE+CONTROL_1*PCT_ASIAN+CONTROL_1*POVERTY_RATE+CONTROL_1*COSTT4_A+CONTROL_1*AVGFACSAL+CONTROL_1*PCT_WHITE, data=data)
 anova(mod3,mod4)
 ```
+
+
+```{r}
+mod <- lm(ADM_RATE ~ CONTROL_1+COSTT4_A+AVGFACSAL+FEMALE+PCT_WHITE+PCT_ASIAN+POVERTY_RATE+CONTROL_1*FEMALE+CONTROL_1*PCT_ASIAN, data=data)
+r <- resid(mod)
+plot(data$ADM_RATE ~ fitted(mod))
+abline(a=0,b=1)
+lines(lowess(data$ADM_RATE ~ fitted(mod)), lty=2)
+```
+
+```{r}
+par(mfrow=c(3,3))
+plot(r ~fitted(mod), main="res against fitted", xlab="Fitted", ylab="res.")
+plot(r ~ data$ADM_RATE, main="res against AdPages", xlab="AdPages", ylab="res")
+plot(r ~ data$COSTT4_A, main="res against SubRevenue", xlab="SubRevenue", ylab="res")
+plot(r ~ data$AVGFACSAL, main="res against NewsRevenue", xlab="NewsRevenue", ylab="res")
+plot(r ~ data$PCT_WHITE, main="res against NewsRevenue", xlab="NewsRevenue", ylab="res")
+plot(r ~ data$PCT_ASIAN, main="res against NewsRevenue", xlab="NewsRevenue", ylab="res")
+plot(r ~ data$FEMALE, main="res against NewsRevenue", xlab="NewsRevenue", ylab="res")
+plot(r ~ data$POVERTY_RATE, main="res against NewsRevenue", xlab="NewsRevenue", ylab="res")
+qqnorm(r)
+qqline(r)
+```
+
+```{r}
+data<-data[which(data$ADM_RATE != 0),]
+library(car)
+p <-powerTransform(cbind(data$ADM_RATE,data$COSTT4_A,data$AVGFACSAL,data$FEMALE,data$PCT_WHITE,data$PCT_ASIAN,data$POVERTY_RATE)~1)
+summary(p)
+```
+
+```{r}
+mod <- lm(ADM_RATE ~ CONTROL_1+COSTT4_A+AVGFACSAL+FEMALE+PCT_WHITE+log(POVERTY_RATE)+CONTROL_1*FEMALE+CONTROL_1*log(PCT_ASIAN), data=data)
+summary(mod)
+
+```
+
+
 
 
 
