@@ -48,7 +48,7 @@ hist(data$POVERTY_RATE, main="Histogram of Poverty Rate", ylab="Poverty Rate",br
 ```
 
 ```{r}
-par(mfrow=c(3,3))
+par(mfrow=c(2,2))
 boxplot(data$ADM_RATE, main="Histogram of Admission Rate", ylab="Admission Rate", horizontal=TRUE)
 boxplot(data$COSTT4_A, main="Histogram of Average Cost of Attendance", ylab="Average Cost of Attendance",horizontal=TRUE)
 boxplot(data$AVGFACSAL, main="Histogram of Average Faculty Salary", ylab="Average Salary",horizontal=TRUE)
@@ -69,7 +69,7 @@ plot(x=data$COSTT4_A,y=data$ADM_RATE,xlab="Average Cost of Attendance", ylab="Ad
 plot(x=data$PCT_BA,y=data$ADM_RATE,xlab="Percentage of People with Bachelor Degree", ylab="Admission Rate", main="Scatter plot for Education Level vs Admission Rate")
 plot(x=data$PCT_BORN_US,y=data$ADM_RATE,xlab="Percentage of People Born in US", ylab="Admission Rate", main="Scatter plot for US Proportion vs Admission Rate")
 plot(x=data$POVERTY_RATE,y=data$ADM_RATE,xlab="Poverty Rate", ylab="Admission Rate", main="Scatter plot for Poverty Rate vs Admission Rate")
-plot(x=data$PCT_BLACK,y=data$ADM_RATE,xlab="Percentage of Black People", ylab="Admission Rate", main="Scatter plot for Black vs Admission Rate")
+plot(x=data$PCT_WHITE,y=data$ADM_RATE,xlab="Percentage of Black People", ylab="Admission Rate", main="Scatter plot for White vs Admission Rate")
 plot(x=data$PCT_ASIAN,y=data$ADM_RATE,xlab="Percentage of Asian People", ylab="Admission Rate", main="Scatter plot for Asian vs Admission Rate")
 ```
 
@@ -81,4 +81,23 @@ Result shows significant F test result, which means linear relationship exists. 
 mod1 <- lm(ADM_RATE ~ CONTROL_1+COSTT4_A+AVGFACSAL+FEMALE+PCT_WHITE+PCT_ASIAN+POVERTY_RATE+CONTROL_1*FEMALE+CONTROL_1*PCT_ASIAN, data=data)
 summary(mod1)
 ```
+
+#Partial F test
+We reject the null hypothesis that coefficientS of CONTROL_1, CONTROL_1*FEMALE, CONTROL_1*ASIAN are zero.
+
+```{r}
+mod1 <- lm(ADM_RATE ~ COSTT4_A+AVGFACSAL+FEMALE+PCT_WHITE+PCT_ASIAN+POVERTY_RATE, data=data)
+mod2 <- lm(ADM_RATE ~ CONTROL_1+COSTT4_A+AVGFACSAL+FEMALE+PCT_WHITE+PCT_ASIAN+POVERTY_RATE+CONTROL_1*FEMALE+CONTROL_1*PCT_ASIAN, data=data)
+anova(mod1,mod2)
+```
+
+We faile to reject the null hypothesis that coefficient of CONTROL_1*PCT_WHITE, CONTROL_1*COSTT4_A, CONTROL_1*AVGFACSAL are zero, so we choose to delete these variables from the model.
+
+```{r}
+mod3 <- lm(ADM_RATE ~ CONTROL_1+COSTT4_A+AVGFACSAL+FEMALE+PCT_WHITE+PCT_ASIAN+POVERTY_RATE+CONTROL_1*FEMALE+CONTROL_1*PCT_ASIAN, data=data)
+mod4 <- lm(ADM_RATE ~ CONTROL_1+COSTT4_A+AVGFACSAL+FEMALE+PCT_WHITE+PCT_ASIAN+POVERTY_RATE+CONTROL_1*FEMALE+CONTROL_1*PCT_ASIAN+CONTROL_1*POVERTY_RATE+CONTROL_1*COSTT4_A+CONTROL_1*AVGFACSAL+CONTROL_1*PCT_WHITE, data=data)
+anova(mod3,mod4)
+```
+
+
 
