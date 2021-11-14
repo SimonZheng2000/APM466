@@ -12,6 +12,18 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```{r}
 data <- read.csv("Video_project_dataset.csv")
+data$REGION_1 = ifelse(data$REGION==1, 1, 0)
+data$REGION_2 = ifelse(data$REGION==2, 1, 0)
+data$REGION_3 = ifelse(data$REGION==3, 1, 0)
+data$REGION_4 = ifelse(data$REGION==4, 1, 0)
+data$REGION_5 = ifelse(data$REGION==5, 1, 0)
+data$REGION_6 = ifelse(data$REGION==6, 1, 0)
+data$REGION_7 = ifelse(data$REGION==7, 1, 0)
+data$REGION_8 = ifelse(data$REGION==8, 1, 0)
+data$REGION_9 = ifelse(data$REGION==9, 1, 0)
+data$CONTROL_1 = ifelse(data$CONTROL==1, 1, 0)
+data$CONTROL_2 = ifelse(data$CONTROL==2, 1, 0)
+data$CONTROL_3 = ifelse(data$CONTROL==3, 1, 0)
 summary(data)
 ```
 
@@ -66,7 +78,7 @@ plot(x=data$PCT_ASIAN,y=data$ADM_RATE,xlab="Percentage of Asian People", ylab="A
 Result shows significant F test result, which means linear relationship exists. However, R-squared is small and some variables (like REGION and PCT_ASIAN) are not significant. We may need a partial F test.
 
 ```{r}
-mod1 <- lm(ADM_RATE ~ REGION+PBI+WOMENONLY+COSTT4_A+PCT_BA+PCT_BORN_US+PCT_BLACK+PCT_ASIAN+POVERTY_RATE, data=data)
+mod1 <- lm(ADM_RATE ~ CONTROL_1+COSTT4_A+AVGFACSAL+FEMALE+PCT_WHITE+PCT_ASIAN+POVERTY_RATE+CONTROL_1*FEMALE+CONTROL_1*PCT_ASIAN, data=data)
 summary(mod1)
 ```
 
