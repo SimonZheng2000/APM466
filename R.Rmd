@@ -75,33 +75,66 @@ plot(x=data$PCT_ASIAN,y=data$ADM_RATE,xlab="Percentage of Asian People", ylab="A
 
 ## Main regression model, with F test
 
-Below is our initial main regression model, with all variables and factors we intend to include (here interaction terms are not included). Result shows significant F test result, which means linear relationship exists. However, R-squared is small and some variables are not significant. We may need a partial F test.
+Below is our initial regression model, with all basic factors we intend to include. F test result shows that linear relationship exists. However, libear relationship between admission rate and some predictors are not significant, and the model contains too much predictors. We may need a partial F test to examine whether some variables is needed.
 
 ```{r}
-mod1 <- lm(ADM_RATE ~ CONTROL_1+CONTROL_2+COSTT4_A+AVGFACSAL+FEMALE+PCT_BA+PCT_WHITE+PCT_ASIAN+PCT_BLACK+POVERTY_RATE+CONTROL_1*FEMALE+CONTROL_1*PCT_ASIAN+CONTROL_1*POVERTY_RATE+CONTROL_1*COSTT4_A+CONTROL_1*AVGFACSAL+CONTROL_1*PCT_WHITE+CONTROL_1*PCT_BA, data=data)
+mod1 <- lm(ADM_RATE ~ CONTROL_1+CONTROL_2+COSTT4_A+AVGFACSAL+FEMALE+PCT_BA+PCT_WHITE+PCT_ASIAN+PCT_BLACK+POVERTY_RATE
+           +CONTROL_1*COSTT4_A+CONTROL_1*AVGFACSAL+CONTROL_1*FEMALE+CONTROL_1*PCT_BA+CONTROL_1*PCT_WHITE+CONTROL_1*PCT_ASIAN+CONTROL_1*PCT_BLACK+CONTROL_1*POVERTY_RATE, data=data)
 summary(mod1)
 ```
 
 #Partial F test
 
-First we examine whether the interaction terms between CONTROL_1 (which is whether the university is public) and other variables are still needed. We found that 
-
-We reject the null hypothesis that coefficientS of CONTROL_1, CONTROL_1*FEMALE, CONTROL_1*ASIAN are zero. So we included them in our model.
-
+First we notice that linear relationship between admission rate and CONTROL_2 or PCT_BA is not significant, so we conduct a partial F-test to test whether we should include them. We cannot reject the null hypothesis that coefficient of these variables are 0, so we decide to exclude them from the linear regression model.
 ```{r}
-mod1 <- lm(ADM_RATE ~ CONTROL_1+CONTROL_2+COSTT4_A+AVGFACSAL+FEMALE+PCT_BA+PCT_WHITE+PCT_ASIAN+PCT_BLACK+POVERTY_RATE, data=data)
-mod2 <- lm(ADM_RATE ~ CONTROL_1+CONTROL_2+COSTT4_A+AVGFACSAL+FEMALE+PCT_BA+PCT_WHITE+PCT_ASIAN+PCT_BLACK+POVERTY_RATE+CONTROL_1*FEMALE+CONTROL_1*PCT_ASIAN+CONTROL_1*POVERTY_RATE+CONTROL_1*COSTT4_A+CONTROL_1*AVGFACSAL+CONTROL_1*PCT_WHITE+CONTROL_1*PCT_BA, data=data)
-anova(mod1,mod2)
+mod2 <- lm(ADM_RATE ~ CONTROL_1+COSTT4_A+AVGFACSAL+FEMALE+PCT_WHITE+PCT_ASIAN+PCT_BLACK+POVERTY_RATE
+           +CONTROL_1*COSTT4_A+CONTROL_1*AVGFACSAL+CONTROL_1*FEMALE+CONTROL_1*PCT_WHITE+CONTROL_1*PCT_ASIAN+CONTROL_1*PCT_BLACK+CONTROL_1*POVERTY_RATE, data=data)
+
+mod3 <- lm(ADM_RATE ~ CONTROL_1+CONTROL_2+COSTT4_A+AVGFACSAL+FEMALE+PCT_BA+PCT_WHITE+PCT_ASIAN+PCT_BLACK+POVERTY_RATE
+           +CONTROL_1*COSTT4_A+CONTROL_1*AVGFACSAL+CONTROL_1*FEMALE+CONTROL_1*PCT_BA+CONTROL_1*PCT_WHITE+CONTROL_1*PCT_ASIAN+CONTROL_1*PCT_BLACK+CONTROL_1*POVERTY_RATE, data=data)
+anova(mod2, mod3)
 ```
 
-We fail to reject the null hypothesis that coefficient of CONTROL_1*PCT_WHITE, CONTROL_1*COSTT4_A, CONTROL_1*AVGFACSAL are zero, so we choose to delete these variables from the model.
+Since the p-value of interaction term between CONTROL_1 and some predictors is not significant,we examine the significance of predictors related to CONTROL_1 (whether the university is public or not). By partial F test, we reject the null hypothesis that the coefficients of predictors related to CONTROL_1 are zero. However, a further partial F test suggest that we could only preserve interaction term between CONTROL_1 and PCT_ASIAN and female.
 
 ```{r}
-mod3 <- lm(ADM_RATE ~ CONTROL_1+COSTT4_A+AVGFACSAL+FEMALE+PCT_WHITE+PCT_ASIAN+POVERTY_RATE+CONTROL_1*FEMALE+CONTROL_1*PCT_ASIAN, data=data)
-mod4 <- lm(ADM_RATE ~ CONTROL_1+COSTT4_A+AVGFACSAL+FEMALE+PCT_WHITE+PCT_ASIAN+POVERTY_RATE+CONTROL_1*FEMALE+CONTROL_1*PCT_ASIAN+CONTROL_1*POVERTY_RATE+CONTROL_1*COSTT4_A+CONTROL_1*AVGFACSAL+CONTROL_1*PCT_WHITE, data=data)
-anova(mod3,mod4)
+mod4 <- lm(ADM_RATE ~ CONTROL_1+COSTT4_A+AVGFACSAL+FEMALE+PCT_WHITE+PCT_BLACK+PCT_ASIAN+POVERTY_RATE, data=data)
+mod5 <- lm(ADM_RATE ~ CONTROL_1+COSTT4_A+AVGFACSAL+FEMALE+PCT_WHITE+PCT_ASIAN+PCT_BLACK+POVERTY_RATE
+           +CONTROL_1*COSTT4_A+CONTROL_1*AVGFACSAL+CONTROL_1*FEMALE+CONTROL_1*PCT_WHITE+CONTROL_1*PCT_ASIAN+CONTROL_1*PCT_BLACK+CONTROL_1*POVERTY_RATE, data=data)
+anova(mod5,mod4)
+
+
+mod6 <- lm(ADM_RATE ~ CONTROL_1+COSTT4_A+AVGFACSAL+FEMALE+PCT_WHITE+PCT_ASIAN+POVERTY_RATE
+           +CONTROL_1*FEMALE+CONTROL_1*PCT_ASIAN, data=data)
+mod7 <- lm(ADM_RATE ~ CONTROL_1+COSTT4_A+AVGFACSAL+FEMALE+PCT_WHITE+PCT_ASIAN+PCT_BLACK+POVERTY_RATE
+           +CONTROL_1*COSTT4_A+CONTROL_1*AVGFACSAL+CONTROL_1*FEMALE+CONTROL_1*PCT_WHITE+CONTROL_1*PCT_ASIAN+CONTROL_1*PCT_BLACK+CONTROL_1*POVERTY_RATE, data=data)
+anova(mod7,mod6)
 ```
 
+Finally, to determine whether we need to include REGION factor, we conducted a partial F test. Although the result is moderately significant, it is a bit too complicated and within T-test, we cannot reject the null hypothesis that the mean of admission rate between each region is not zero. Therefore we decide not to include REGION predictor within our regression model.
+
+```{r}
+mod8 <- lm(ADM_RATE ~ CONTROL_1+COSTT4_A+AVGFACSAL+FEMALE+PCT_WHITE+PCT_ASIAN+POVERTY_RATE+CONTROL_1*FEMALE+CONTROL_1*PCT_ASIAN, data=data)
+mod9 <- lm(ADM_RATE ~ REGION_1+REGION_2+REGION_3+REGION_4+REGION_5+REGION_6+REGION_7+REGION_8+CONTROL_1+COSTT4_A+AVGFACSAL+FEMALE+PCT_WHITE+PCT_ASIAN+POVERTY_RATE+CONTROL_1*FEMALE+CONTROL_1*PCT_ASIAN, data=data)
+anova(mod8,mod9)
+summary(mod9)
+```
+
+Therefore, our final regression model would include following 9 predictors: CONTROL_1 (public university), Cost, Average Faculty Salary, Female Student Proportion, White Student Proportion, Asian Student Proportion, Poverty Rate of Student's Neighbourhood, interaction term between public university and female proportion and interaction term between public university and asian student proportion. This model will have R square equal to 0.23.
+
+If we are not sensitive to a more complex model, we could add region predictors so that we get larger R square and better interpretation of variance of response value.
+
+```{r}
+mod <- lm(ADM_RATE ~ CONTROL_1+COSTT4_A+AVGFACSAL+FEMALE+PCT_WHITE+PCT_ASIAN+POVERTY_RATE
+           +CONTROL_1*FEMALE+CONTROL_1*PCT_ASIAN, data=data)
+summary(mod)
+
+mod0 <- lm(ADM_RATE ~ REGION_1+REGION_2+REGION_3+REGION_4+REGION_5+REGION_6+REGION_7+REGION_8+CONTROL_1+COSTT4_A+AVGFACSAL+FEMALE+PCT_WHITE+PCT_ASIAN+POVERTY_RATE
+           +CONTROL_1*FEMALE+CONTROL_1*PCT_ASIAN, data=data)
+summary(mod0)
+```
+
+#Test Linear Regression Assumptions and Transformation of Predictors
 
 ```{r}
 mod <- lm(ADM_RATE ~ CONTROL_1+COSTT4_A+AVGFACSAL+FEMALE+PCT_WHITE+PCT_ASIAN+POVERTY_RATE+CONTROL_1*FEMALE+CONTROL_1*PCT_ASIAN, data=data)
@@ -114,17 +147,18 @@ lines(lowess(data$ADM_RATE ~ fitted(mod)), lty=2)
 ```{r}
 par(mfrow=c(3,3))
 plot(r ~fitted(mod), main="res against fitted", xlab="Fitted", ylab="res.")
-plot(r ~ data$ADM_RATE, main="res against AdPages", xlab="AdPages", ylab="res")
-plot(r ~ data$COSTT4_A, main="res against SubRevenue", xlab="SubRevenue", ylab="res")
-plot(r ~ data$AVGFACSAL, main="res against NewsRevenue", xlab="NewsRevenue", ylab="res")
-plot(r ~ data$PCT_WHITE, main="res against NewsRevenue", xlab="NewsRevenue", ylab="res")
-plot(r ~ data$PCT_ASIAN, main="res against NewsRevenue", xlab="NewsRevenue", ylab="res")
-plot(r ~ data$FEMALE, main="res against NewsRevenue", xlab="NewsRevenue", ylab="res")
-plot(r ~ data$POVERTY_RATE, main="res against NewsRevenue", xlab="NewsRevenue", ylab="res")
+plot(r ~ data$ADM_RATE, main="res against Admission Rate", xlab="Admission Rate", ylab="res")
+plot(r ~ data$COSTT4_A, main="res against Cost", xlab="Cost", ylab="res")
+plot(r ~ data$AVGFACSAL, main="res against Salary", xlab="AVGFACSAL", ylab="res")
+plot(r ~ data$PCT_WHITE, main="res against White Proportion", xlab="PCT_WHITE", ylab="res")
+plot(r ~ data$PCT_ASIAN, main="res against Asian Proportion", xlab="PCT_ASIAN", ylab="res")
+plot(r ~ data$FEMALE, main="res against Female Proportion", xlab="FEMALE", ylab="res")
+plot(r ~ data$POVERTY_RATE, main="res against Poverty Rate", xlab="Poverty Rate", ylab="res")
 qqnorm(r)
 qqline(r)
 ```
 
+Power Transform test indicates that log transformation is needed in order to improve the normality of predictors.
 ```{r}
 data<-data[which(data$ADM_RATE != 0),]
 library(car)
@@ -132,8 +166,9 @@ p <-powerTransform(cbind(data$ADM_RATE,data$COSTT4_A,data$AVGFACSAL,data$FEMALE,
 summary(p)
 ```
 
+Since the residual plot of some varibles are basically normal, we choose to transform ADM_RATE, POVERTY_RATE and PCT_ASIAN. We saw a rise in R square.
 ```{r}
-mod <- lm(ADM_RATE ~ CONTROL_1+COSTT4_A+AVGFACSAL+FEMALE+PCT_WHITE+log(POVERTY_RATE)+CONTROL_1*FEMALE+CONTROL_1*log(PCT_ASIAN), data=data)
+mod <- lm(log(ADM_RATE) ~ CONTROL_1+COSTT4_A+AVGFACSAL+FEMALE+PCT_WHITE+log(PCT_ASIAN)+log(POVERTY_RATE)+CONTROL_1*FEMALE+CONTROL_1*log(PCT_ASIAN), data=data)
 summary(mod)
 
 ```
